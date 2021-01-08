@@ -24,7 +24,7 @@ namespace BattleRoyaleMod
 
         public const string pluginName = "Battle Royale Mod";
 
-        public const string pluginVerson = "1.1.0";
+        public const string pluginVerson = "1.1.1";
 
         public static ConfigDefinition modEnableDef = new ConfigDefinition(pluginName, "Enable/Disable Mod");
         public static ConfigDefinition SecondOppDef = new ConfigDefinition(pluginName, "Second Key");
@@ -34,6 +34,7 @@ namespace BattleRoyaleMod
         public static ConfigDefinition WhitelistMuteDef = new ConfigDefinition(pluginName, "Remove on mute");
         public static ConfigDefinition SetTimerDef = new ConfigDefinition(pluginName, "Set Timer");
         public static ConfigDefinition TimerScreenDef = new ConfigDefinition(pluginName, "Timer In Middle");
+        public static ConfigDefinition AllowModDef = new ConfigDefinition(pluginName, "Twitch Mod Allowed");
 
         public static ConfigEntry<bool> mEnabled;
 
@@ -61,6 +62,8 @@ namespace BattleRoyaleMod
 
         public static ConfigEntry<bool> mTimerScreen;
         public static string LastSuggestion;
+
+        public static ConfigEntry<bool> mAllowMod;
 
         public static List<string> whitelist = new List<string>();
         public static bool whitelistEnabled = false;
@@ -104,7 +107,11 @@ namespace BattleRoyaleMod
             Config.Bind(TimerScreenDef, true, new ConfigDescription("Controls if the timer will be shown in the middle of the screen", null, new ConfigurationManagerAttributes { Order = order }));
             mTimerScreen = (ConfigEntry<bool>)Config[TimerScreenDef];
             order--;
-            
+
+            Config.Bind(AllowModDef, false, new ConfigDescription("Controls if players can send bridges with the ingame twitch mod", null, new ConfigurationManagerAttributes { Order = order }));
+            mAllowMod = (ConfigEntry<bool>)Config[AllowModDef];
+            order--;
+
 
             Config.SettingChanged += onSettingChanged;
             onSettingChanged(null, null);
@@ -361,15 +368,28 @@ namespace BattleRoyaleMod
         [HarmonyPatch(typeof(PolyTwitchSuggestions), "Create")]
         private static class patchSuggestions
         {
-            private static bool Prefix(string username)
+            private static bool Prefix(string username, BridgeSaveData saveData)
             {
-                if (!CheckForCheating()) return true;
-                LastSuggestion = username;
-                if (whitelistEnabled && !whitelist.Contains(username)) return false;
+                if (CheckForCheating())
+                {
+                    if (whitelistEnabled && !whitelist.Contains(username)) return false;
+                    if (!mAllowMod.Value) foreach (BridgeJointProxy joint in saveData.m_BridgeJoints) if (joint.m_Guid == "Bram2323IsTheBest!") return false;
+                    LastSuggestion = username;
+                }
                 return true;
             }
         }
+        
+        [HarmonyPatch(typeof(PolyTwitchBans), "MutePlayer")]
+        private static class onMute
+        {
+            private static void Prefix(ref string username)
+            {
+                if (!CheckForCheating() || !mWhitelistMute.Value) return;
 
+                if (whitelist.Contains(username)) whitelist.Remove(username);
+            }
+        }
 
         //auto mute
         public static void OnAutoMute()
@@ -475,7 +495,7 @@ namespace BattleRoyaleMod
             }
         }
 
-        //Whitelist
+        //patches
         [HarmonyPatch(typeof(Panel_PopUpInputField), "OnEnable")]
         private static class inputField
         {
@@ -484,17 +504,6 @@ namespace BattleRoyaleMod
                 if (!CheckForCheating() || !InUpdate) return;
 
                 __instance.m_InputField.characterLimit = int.MaxValue;
-            }
-        }
-        
-        [HarmonyPatch(typeof(PolyTwitchBans), "MutePlayer")]
-        private static class onMute
-        {
-            private static void Prefix(ref string username)
-            {
-                if (!CheckForCheating() || !mWhitelistMute.Value) return;
-
-                if (whitelist.Contains(username)) whitelist.Remove(username);
             }
         }
 
@@ -535,15 +544,15 @@ namespace BattleRoyaleMod
 
 
 
-    public static string GetMuteMessage(string name)
-    {
-        switch (name.ToLower())
-	    {
-            case "bolt_986": return "Haha, " + name + " go brrrrrrrrr";
-		    default: return "Muting " + name;
-	    }
+        public static string GetMuteMessage(string name)
+        {
+            switch (name.ToLower())
+	        {
+                case "bolt_986": return "Haha, " + name + " go brrrrrrrrr";
+		        default: return "Muting " + name;
+	        }
+        }
     }
-}
 
 
 
