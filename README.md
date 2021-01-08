@@ -4,7 +4,7 @@ What it does: It adds battle royale stuff
 
 Game Version: 1.24+
 
-Mod Version: 1.1.0
+Mod Version: 1.1.1
 
 Dependencies: PolyTech Framework 0.7.5+
 
@@ -32,3 +32,5 @@ To install: Place this .dll in the ...\Poly Bridge 2\BepInEx\plugins folder
 - Set Timer: What button sets and starts the timer, if active it will add to the timer, (+ second key: stop the timer) (It will (de)activate allow suggestions automatically)
 
 - Timer In Middle: Controls if the timer will be shown in the middle of the screen (It will always show in the top middle of the screen)
+
+- Added setting "Twitch Mod Allowed": Controls if players can send bridges with Twitch Mod Version 1.0.1+ (There is no support for detecting version 1.0.0 but that version is not public so that should not be a problem)
