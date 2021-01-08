@@ -33,4 +33,4 @@ To install: Place this .dll in the ...\Poly Bridge 2\BepInEx\plugins folder
 
 - Timer In Middle: Controls if the timer will be shown in the middle of the screen (It will always show in the top middle of the screen)
 
-- Added setting "Twitch Mod Allowed": Controls if players can send bridges with Twitch Mod Version 1.0.1+ (There is no support for detecting version 1.0.0 but that version is not public so that should not be a problem)
+- Twitch Mod Allowed: Controls if players can send bridges with Twitch Mod Version 1.0.1+ (There is no support for detecting version 1.0.0 but that version is not public so that should not be a problem)
